@@ -49,10 +49,21 @@ def load_ldap_config():
         return None
 def ldap_authenticate(username, password):
     try:
-        server = Server(LDAP_SERVER, port=LDAP_PORT, get_info=ALL)
-        conn = Connection(server, user=LDAP_BIND_USER_DN, password=LDAP_BIND_USER_PASSWORD, auto_bind=True)
-        search_filter = f"({LDAP_USER_LOGIN_ATTR}={username})"
-        conn.search(LDAP_BASE_DN, search_filter, search_scope=SUBTREE, attributes=['cn', 'givenName', 'sn', 'mail', 'telephoneNumber'])
+        ldap_settings = get_ldap_config()
+        if not ldap_settings:
+            print("Ошибка: Настройки LDAP не загружены.")
+            return False
+
+        server = Server(ldap_settings['server'], port=int(ldap_settings['port']), get_info=ALL)
+        conn = Connection(
+            server,
+            user=ldap_settings['bind_user'],
+            password=ldap_settings['bind_password'],
+            auto_bind=True
+        )
+
+        search_filter = f"({ldap_settings['user_attr']}={username})"
+        conn.search(ldap_settings['base_dn'], search_filter, search_scope=SUBTREE, attributes=['cn', 'givenName', 'sn'])
 
         if not conn.entries:
             return False
@@ -63,10 +74,7 @@ def ldap_authenticate(username, password):
         if user_conn.bind():
             first_name = conn.entries[0]['givenName'].value if 'givenName' in conn.entries[0] else None
             last_name = conn.entries[0]['sn'].value if 'sn' in conn.entries[0] else None
-            email = conn.entries[0]['mail'].value if 'mail' in conn.entries[0] else None
-            phone = conn.entries[0]['telephoneNumber'].value if 'telephoneNumber' in conn.entries[0] else None
             middle_name = None
-
             if 'cn' in conn.entries[0]:
                 full_name = conn.entries[0]['cn'].value
                 full_name_parts = full_name.split()
@@ -75,29 +83,25 @@ def ldap_authenticate(username, password):
                 first_name = first_name or full_name_parts[0]
                 last_name = last_name or full_name_parts[-1]
 
-            # Подключение к БД
+            # Сохраняем данные в БД, если их нет
             conn_db = get_db_connection()
             user_in_db = conn_db.execute('SELECT * FROM users WHERE username = ?', (username,)).fetchone()
 
             if not user_in_db:
                 conn_db.execute(
-                    'INSERT INTO users (username, first_name, last_name, middle_name, email, phone, is_ldap_user) VALUES (?, ?, ?, ?, ?, ?, ?)',
-                    (username, first_name, last_name, middle_name, email, phone, 1)
+                    'INSERT INTO users (username, first_name, last_name, middle_name, is_admin, is_ldap_user) VALUES (?, ?, ?, ?, ?, ?)',
+                    (username, first_name, last_name, middle_name, 0, 1)
                 )
                 conn_db.commit()
                 user_in_db = conn_db.execute('SELECT * FROM users WHERE username = ?', (username,)).fetchone()
 
-            # ✅ Записываем в сессию
+            # Сохранение информации о пользователе в сессии
             session['is_ldap_user'] = True
             session['user_id'] = user_in_db['id']
             session['is_admin'] = 0
             session['first_name'] = first_name
             session['last_name'] = last_name
             session['middle_name'] = middle_name
-            session['email'] = email
-            session['phone'] = phone
-
-            print(f"✅ Вход через LDAP: {session}")
 
             conn_db.close()
             return True
