@@ -1,0 +1,5 @@
+.idea
+.venv
+kanban.db.old
+__pycache__/
+.DS_Store
