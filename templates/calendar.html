@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Календарь задач</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link href='https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css' rel='stylesheet' />
+</head>
+<body>
+    <h1>Календарь задач</h1>
+
+    <!-- Кнопка для возврата на главную страницу -->
+    <form action="{{ url_for('index') }}" method="GET">
+        <button type="submit" class="btn-back">Назад к Канбану</button>
+    </form>
+
+    <div id='calendar'></div>
+
+    <script src='https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js'></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            var calendarEl = document.getElementById('calendar');
+
+            var calendar = new FullCalendar.Calendar(calendarEl, {
+                initialView: 'dayGridMonth',
+                events: [
+                    {% for task in tasks %}
+                    {% if task['due_date'] %}
+                    {
+                        title: "#{{ task['task_number'] }} - {{ task['title'] }}{% if task['assignee_name'] %} - {{ task['assignee_name'] }}{% endif %}",
+                        start: "{{ task['due_date'] }}",
+                        url: "/task/{{ task['id'] }}"
+                    },
+                    {% endif %}
+                    {% endfor %}
+                ],
+                eventClick: function(info) {
+                    info.jsEvent.preventDefault();
+                    if (info.event.url) {
+                        window.location.href = info.event.url;  // Переход по ссылке на задачу
+                    }
+                }
+            });
+
+            calendar.render();
+        });
+    </script>
+</body>
+</html>

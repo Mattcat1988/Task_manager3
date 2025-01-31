@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Мои данные</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <h1>Мои данные</h1>
+
+    <!-- Кнопка возврата -->
+    <form action="{{ url_for('index') }}" method="GET">
+        <button type="submit" class="btn-back">Назад к Канбану</button>
+    </form>
+
+    <!-- Форма редактирования профиля -->
+    <form id="profileForm" action="{{ url_for('update_profile') }}" method="POST">
+        <label>Имя:</label>
+        <input type="text" name="first_name" value="{{ user['first_name'] }}" {% if user['is_ldap_user'] %}disabled{% endif %}>
+
+        <label>Фамилия:</label>
+        <input type="text" name="last_name" value="{{ user['last_name'] }}" {% if user['is_ldap_user'] %}disabled{% endif %}>
+
+        <label>Email:</label>
+        <input type="email" name="email" value="{{ user['email'] }}">
+
+        <label>Телефон:</label>
+        <input type="text" name="phone" value="{{ user['phone'] }}">
+
+        <label>Заметки:</label>
+        <textarea name="notes">{{ user['notes'] }}</textarea>
+
+        <button type="submit">Сохранить изменения</button>
+    </form>
+</body>
+</html>

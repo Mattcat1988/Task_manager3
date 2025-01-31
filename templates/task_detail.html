@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Детали задачи</title>
+</head>
+<body>
+    <h1>{{ task['title'] }}</h1>
+    <p><strong>Описание:</strong> {{ task['description'] or 'Нет описания' }}</p>
+    <p><strong>Статус:</strong> {{ task['status'] }}</p>
+    <p><strong>Срок выполнения:</strong> {{ task['due_date'] or 'Не установлен' }}</p>
+
+    <a href="/">Назад к Канбан-доске</a>
+</body>
+</html>

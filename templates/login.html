@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Вход</title>
+
+</head>
+
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+<body>
+    <h2>Вход</h2>
+    <h3>Добро пожаловать в канбан</h3>
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            <ul>
+                {% for message in messages %}
+                    <li>{{ message }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+    {% endwith %}
+    <form action="{{ url_for('login') }}" method="post">
+        <label>
+            <input type="radio" name="auth_type" value="local" checked> Локальный вход
+        </label>
+        <label>
+            <input type="radio" name="auth_type" value="ldap"> Вход через LDAP
+        </label>
+        <input type="text" name="username" placeholder="Имя пользователя" required>
+        <input type="password" name="password" placeholder="Пароль" required>
+        <button type="submit">Войти</button>
+    </form>
+    <p>Нет учетной записи? <a href="{{ url_for('register') }}">Зарегистрироваться</a></p>
+</body>
+</html>

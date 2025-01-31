@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <meta charset="UTF-8">
+    <title>Подробности задачи</title>
+</head>
+<body>
+    <h1>Подробности задачи</h1>
+    <h2>#{{ task['task_number'] }} - {{ task['title'] }}</h2>
+    <p><strong>Статус:</strong> {{ task['status'] }}</p>
+    <p><strong>Описание:</strong> {{ task['description'] or 'Нет описания' }}</p>
+    <p><strong>Срок выполнения:</strong> {{ task['due_date'] or 'Не указан' }}</p>
+    <a href="{{ url_for('index') }}">Вернуться на доску</a>
+</body>
+</html>
