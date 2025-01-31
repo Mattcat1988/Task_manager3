@@ -553,7 +553,7 @@ def update_contact():
 #Страница пользователя
 @app.route('/profile')
 def profile():
-    print("🔍 Проверка сессии:", session)  # Выведет данные сессии в консоль
+    print("🔍 Проверка сессии:", session)  # Вывод информации о сессии
 
     if 'user_id' not in session:
         print("⚠️ Ошибка: user_id отсутствует в сессии!")
@@ -562,14 +562,21 @@ def profile():
     conn = get_db_connection()
     user_id = session['user_id']
 
-    # Получаем данные пользователя
-    user = conn.execute('SELECT id, first_name, last_name, email, phone, notes, is_ldap_user FROM users WHERE id = ?', (user_id,)).fetchone()
+    # Если user_id строка (LDAP username), ищем пользователя по username
+    if isinstance(user_id, str):
+        user = conn.execute('SELECT * FROM users WHERE username = ?', (user_id,)).fetchone()
+    else:
+        user = conn.execute('SELECT * FROM users WHERE id = ?', (user_id,)).fetchone()
+
     conn.close()
 
     if user is None:
+        print(f"⚠️ Ошибка: Пользователь {user_id} не найден в БД!")
         return redirect(url_for('index'))
 
-    return render_template('profile.html', user=user)
+    print(f"✅ Пользователь найден: {user['first_name']} {user['last_name']} (ID: {user['id']})")
+
+    return render_template('profile.html', user=dict(user))  # Преобразуем в словарь для удобства
 #Обновление профиля
 @app.route('/update_profile', methods=['POST'])
 def update_profile():
