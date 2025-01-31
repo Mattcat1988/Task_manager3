@@ -52,7 +52,7 @@ CREATE TABLE IF NOT EXISTS contacts (
     FOREIGN KEY (contact_id) REFERENCES users(id) ON DELETE CASCADE
 );
 CREATE TABLE IF NOT EXISTS ldap_settings (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    id INTEGER PRIMARY KEY CHECK (id = 1), -- Всегда одна запись с id=1
     server TEXT NOT NULL,
     port INTEGER NOT NULL,
     bind_user TEXT NOT NULL,

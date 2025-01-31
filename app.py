@@ -153,37 +153,44 @@ def admin_panel():
 @app.route('/admin/save_ldap_settings', methods=['POST'])
 def save_ldap_settings():
     data = request.json  # Получаем JSON
-    print("📥 Полученные данные:", data)  # Логируем полученные данные
+    print("📥 Полученные данные:", data)  # Логируем
 
-    if not data or 'server' not in data:
-        return jsonify({"error": "Некорректные данные или отсутствует поле 'server'"}), 400
+    # Проверяем, пришли ли корректные данные
+    required_keys = ['ldap_server', 'ldap_port', 'ldap_bind_user', 'ldap_bind_password', 'ldap_base_dn', 'ldap_user_attr']
+    if not all(key in data for key in required_keys):
+        return jsonify({"error": "Некорректные данные. Отсутствуют обязательные поля"}), 400
 
     try:
         conn = get_db_connection()
+
+        # Проверяем, есть ли уже настройки LDAP
         existing = conn.execute("SELECT id FROM ldap_settings WHERE id = 1").fetchone()
 
         if existing:
+            print("🔄 Обновляем существующие настройки LDAP в БД")
             conn.execute("""
                 UPDATE ldap_settings
                 SET server = ?, port = ?, bind_user = ?, bind_password = ?, base_dn = ?, user_attr = ?
                 WHERE id = 1
-            """, (
-            data['server'], data['port'], data['bind_user'], data['bind_password'], data['base_dn'], data['user_attr']))
+            """, (data['ldap_server'], data['ldap_port'], data['ldap_bind_user'],
+                  data['ldap_bind_password'], data['ldap_base_dn'], data['ldap_user_attr']))
         else:
+            print("🆕 Создаём запись с настройками LDAP")
             conn.execute("""
-                INSERT INTO ldap_settings (server, port, bind_user, bind_password, base_dn, user_attr)
-                VALUES (?, ?, ?, ?, ?, ?)
-            """, (
-            data['server'], data['port'], data['bind_user'], data['bind_password'], data['base_dn'], data['user_attr']))
+                INSERT INTO ldap_settings (id, server, port, bind_user, bind_password, base_dn, user_attr)
+                VALUES (1, ?, ?, ?, ?, ?, ?)
+            """, (data['ldap_server'], data['ldap_port'], data['ldap_bind_user'],
+                  data['ldap_bind_password'], data['ldap_base_dn'], data['ldap_user_attr']))
 
         conn.commit()
         conn.close()
 
-        # Обновляем JSON-кэш
+        # Сохраняем настройки в JSON-файл (кешируем)
         with open("ldap_config.json", "w", encoding="utf-8") as f:
             json.dump(data, f, indent=4)
 
-        return jsonify({"message": "Настройки LDAP сохранены"}), 200
+        return jsonify({"message": "Настройки LDAP успешно сохранены"}), 200
+
     except Exception as e:
         return jsonify({"error": f"Ошибка сохранения LDAP: {str(e)}"}), 500
 #Проверка ldap соединения
