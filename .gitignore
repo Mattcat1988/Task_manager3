@@ -4,3 +4,4 @@ kanban.db.old
 __pycache__/
 .DS_Store
 kanban.db
+ldap_config_json

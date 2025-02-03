@@ -581,44 +581,47 @@ def profile():
 @app.route('/update_profile', methods=['POST'])
 def update_profile():
     if 'user_id' not in session:
+        print("⚠️ Ошибка: user_id отсутствует в сессии!")
         return redirect(url_for('login'))
 
     user_id = session['user_id']
     conn = get_db_connection()
 
-    # Проверяем, является ли пользователь LDAP или локальным
-    user = conn.execute('SELECT is_ldap_user FROM users WHERE id = ?', (user_id,)).fetchone()
+    # Отладка
+    print(f"📥 Данные из формы: {request.form}")
+    print(f"🔍 ID пользователя в сессии: {user_id}")
 
+    # Проверка, является ли пользователь LDAP
+    user = conn.execute('SELECT id, is_ldap_user FROM users WHERE id = ?', (user_id,)).fetchone()
     if not user:
+        print("❌ Ошибка: Пользователь не найден в БД")
         conn.close()
-        return redirect(url_for('index'))
+        return redirect(url_for('profile'))
 
     is_ldap_user = user['is_ldap_user']
 
-    # Получаем данные из формы с проверкой наличия ключей
-    email = request.form.get('email', '').strip()
-    phone = request.form.get('phone', '').strip()
-    notes = request.form.get('notes', '').strip()
+    # Обновляем ТОЛЬКО разрешённые поля
+    email = request.form.get('email')
+    phone = request.form.get('phone')
+    notes = request.form.get('notes')
 
-    # Локальные пользователи могут редактировать имя и фамилию
-    if not is_ldap_user:
-        first_name = request.form.get('first_name', '').strip()
-        last_name = request.form.get('last_name', '').strip()
-
+    if is_ldap_user:
+        print("✅ Это LDAP-пользователь, обновляем только email, телефон и заметки.")
         conn.execute(
-            'UPDATE users SET first_name = ?, last_name = ?, email = ?, phone = ?, notes = ? WHERE id = ?',
-            (first_name, last_name, email, phone, notes, user_id)
+            "UPDATE users SET email = ?, phone = ?, notes = ? WHERE id = ?",
+            (email, phone, notes, user_id)
         )
     else:
-        # LDAP-пользователь может редактировать только email, phone и notes
+        print("✅ Это локальный пользователь, обновляем все данные.")
+        first_name = request.form.get('first_name')
+        last_name = request.form.get('last_name')
         conn.execute(
-            'UPDATE users SET email = ?, phone = ?, notes = ? WHERE id = ?',
-            (email, phone, notes, user_id)
+            "UPDATE users SET first_name = ?, last_name = ?, email = ?, phone = ?, notes = ? WHERE id = ?",
+            (first_name, last_name, email, phone, notes, user_id)
         )
 
     conn.commit()
     conn.close()
-
     return redirect(url_for('profile'))
 #Создание общего проекта
 @app.route('/invite_to_project/<int:project_id>', methods=['POST'])
