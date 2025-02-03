@@ -583,33 +583,38 @@ def update_profile():
     if 'user_id' not in session:
         return redirect(url_for('login'))
 
-    conn = get_db_connection()
     user_id = session['user_id']
+    conn = get_db_connection()
 
-    # Получаем данные пользователя
+    # Проверяем, является ли пользователь LDAP или локальным
     user = conn.execute('SELECT is_ldap_user FROM users WHERE id = ?', (user_id,)).fetchone()
 
-    if user is None:
+    if not user:
         conn.close()
-        return redirect(url_for('profile'))
+        return redirect(url_for('index'))
 
-    # Получаем данные из формы
-    email = request.form['email']
-    phone = request.form['phone']
-    notes = request.form['notes']
+    is_ldap_user = user['is_ldap_user']
 
-    # Если пользователь локальный, позволяем изменять имя и фамилию
-    if not user['is_ldap_user']:
-        first_name = request.form['first_name']
-        last_name = request.form['last_name']
-        conn.execute('''
-            UPDATE users SET first_name = ?, last_name = ?, email = ?, phone = ?, notes = ? WHERE id = ?
-        ''', (first_name, last_name, email, phone, notes, user_id))
+    # Получаем данные из формы с проверкой наличия ключей
+    email = request.form.get('email', '').strip()
+    phone = request.form.get('phone', '').strip()
+    notes = request.form.get('notes', '').strip()
+
+    # Локальные пользователи могут редактировать имя и фамилию
+    if not is_ldap_user:
+        first_name = request.form.get('first_name', '').strip()
+        last_name = request.form.get('last_name', '').strip()
+
+        conn.execute(
+            'UPDATE users SET first_name = ?, last_name = ?, email = ?, phone = ?, notes = ? WHERE id = ?',
+            (first_name, last_name, email, phone, notes, user_id)
+        )
     else:
-        # LDAP пользователи могут менять только email, телефон и заметки
-        conn.execute('''
-            UPDATE users SET email = ?, phone = ?, notes = ? WHERE id = ?
-        ''', (email, phone, notes, user_id))
+        # LDAP-пользователь может редактировать только email, phone и notes
+        conn.execute(
+            'UPDATE users SET email = ?, phone = ?, notes = ? WHERE id = ?',
+            (email, phone, notes, user_id)
+        )
 
     conn.commit()
     conn.close()

@@ -16,23 +16,21 @@
     <!-- Форма редактирования профиля -->
     <form id="profileForm" action="{{ url_for('update_profile') }}" method="POST">
         <label>Имя:</label>
-        <input type="text" name="first_name" value="{{ user.get('first_name', '') }}"
-               {% if user.get('is_ldap_user') %}disabled{% endif %}>
+        <input type="text" name="first_name" value="{{ user['first_name'] }}"
+               {% if user['is_ldap_user'] %}disabled{% endif %}>
 
         <label>Фамилия:</label>
-        <input type="text" name="last_name" value="{{ user.get('last_name', '') }}"
-               {% if user.get('is_ldap_user') %}disabled{% endif %}>
+        <input type="text" name="last_name" value="{{ user['last_name'] }}"
+               {% if user['is_ldap_user'] %}disabled{% endif %}>
 
         <label>Email:</label>
-        <input type="email" name="email" value="{{ user.get('email', '') }}"
-               {% if not user.get('is_ldap_user') %}disabled{% else %}required{% endif %} autocomplete="off">
+        <input type="email" name="email" value="{{ user['email'] or '' }}" required>
 
         <label>Телефон:</label>
-        <input type="text" name="phone" value="{{ user.get('phone', '') }}"
-               {% if not user.get('is_ldap_user') %}disabled{% endif %} autocomplete="off">
+        <input type="text" name="phone" value="{{ user['phone'] or '' }}">
 
         <label>Заметки:</label>
-        <textarea name="notes">{{ user.get('notes', '') }}</textarea>
+        <textarea name="notes">{{ user['notes'] or '' }}</textarea>
 
         <button type="submit">Сохранить изменения</button>
     </form>
