@@ -6,8 +6,8 @@ CREATE TABLE IF NOT EXISTS users (
     first_name TEXT,  -- Имя
     last_name TEXT,   -- Фамилия
     middle_name TEXT, -- Отчество
-    email TEXT, -- Почта
-    phone TEXT, -- Телефон
+    email TEXT DEFAULT '', -- Почта (по умолчанию пустая строка)
+    phone TEXT DEFAULT '', -- Телефон (по умолчанию пустая строка)
     notes TEXT DEFAULT '', -- Запись о пользователе
     is_ldap_user INTEGER DEFAULT 0 -- LDAP-пользователь: 1 для LDAP, 0 для обычного
 );
@@ -16,7 +16,7 @@ CREATE TABLE IF NOT EXISTS projects (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     name TEXT NOT NULL,
     owner_id INTEGER NOT NULL, -- Владелец проекта
-    FOREIGN KEY (owner_id) REFERENCES users (id) ON DELETE CASCADE
+    FOREIGN KEY (owner_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS project_users (
@@ -44,6 +44,7 @@ CREATE TABLE IF NOT EXISTS tasks (
     FOREIGN KEY (parent_id) REFERENCES tasks(id) ON DELETE CASCADE,
     FOREIGN KEY (assignee_id) REFERENCES users(id) ON DELETE SET NULL
 );
+
 CREATE TABLE IF NOT EXISTS contacts (
     user_id INTEGER NOT NULL,
     contact_id INTEGER NOT NULL,
@@ -51,8 +52,9 @@ CREATE TABLE IF NOT EXISTS contacts (
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
     FOREIGN KEY (contact_id) REFERENCES users(id) ON DELETE CASCADE
 );
+
 CREATE TABLE IF NOT EXISTS ldap_settings (
-    id INTEGER PRIMARY KEY CHECK (id = 1), -- Всегда одна запись с id=1
+    id INTEGER PRIMARY KEY CHECK (id = 1) UNIQUE, -- Гарантируем, что будет только одна запись
     server TEXT NOT NULL,
     port INTEGER NOT NULL,
     bind_user TEXT NOT NULL,
