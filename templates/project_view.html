@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ project['name'] }}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <h1>Проект: {{ project['name'] }}</h1>
+    <h2>Участники:</h2>
+    <ul>
+        {% for user in users %}
+            <li>{{ user['username'] }} ({{ user['role'] }})</li>
+        {% endfor %}
+    </ul>
+
+    <h2>Задачи:</h2>
+    <ul>
+        {% for task in tasks %}
+            <li>{{ task['title'] }} - {{ task['status'] }}</li>
+        {% endfor %}
+    </ul>
+
+    <a href="{{ url_for('index') }}">Назад к списку проектов</a>
+</body>
+</html>

@@ -16,6 +16,8 @@ CREATE TABLE IF NOT EXISTS projects (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     name TEXT NOT NULL,
     owner_id INTEGER NOT NULL, -- Владелец проекта
+    status TEXT DEFAULT 'Концепция' CHECK(status IN ('Концепция', 'Запущено', 'В Работе', 'Обзор', 'Завершено')), -- Статус проекта
+    priority TEXT DEFAULT 'Средний' CHECK(priority IN ('Высокий', 'Средний', 'Низкий')), -- Приоритет проекта
     FOREIGN KEY (owner_id) REFERENCES users(id) ON DELETE CASCADE
 );
 

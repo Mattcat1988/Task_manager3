@@ -353,3 +353,41 @@ function saveContact() {
     })
     .catch(error => console.error('Ошибка:', error));
 }
+# Обновление статуса проекта
+@app.route('/update_project_status/<int:project_id>', methods=['POST'])
+def update_project_status(project_id):
+    if 'user_id' not in session:
+        return jsonify({'error': 'Unauthorized'}), 401
+
+    data = request.get_json()
+    new_status = data.get('status')
+
+    if not new_status:
+        return jsonify({'error': 'Invalid data'}), 400
+
+    conn = get_db_connection()
+    conn.execute('UPDATE projects SET status = ? WHERE id = ?', (new_status, project_id))
+    conn.commit()
+    conn.close()
+
+    return jsonify({'message': 'Статус обновлен успешно'}), 200
+
+
+# Обновление приоритета проекта
+@app.route('/update_project_priority/<int:project_id>', methods=['POST'])
+def update_project_priority(project_id):
+    if 'user_id' not in session:
+        return jsonify({'error': 'Unauthorized'}), 401
+
+    data = request.get_json()
+    new_priority = data.get('priority')
+
+    if not new_priority:
+        return jsonify({'error': 'Invalid data'}), 400
+
+    conn = get_db_connection()
+    conn.execute('UPDATE projects SET priority = ? WHERE id = ?', (new_priority, project_id))
+    conn.commit()
+    conn.close()
+
+    return jsonify({'message': 'Приоритет обновлен успешно'}), 200

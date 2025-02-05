@@ -2,273 +2,124 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>Канбан-доска</title>
+    <title>Список проектов</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-    <link rel="stylesheet" href=" https://use.fontawesome.com/releases/v6.6.0/css/all.css">
-    <!--    <link href='https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css' rel='stylesheet' />-->
 </head>
 <body>
-<form action="{{ url_for('profile') }}" method="GET">
-    <button type="submit" class="btn-profile">Мои данные</button>
+    <div class="sidebar">
+        <h2>Меню</h2>
+        <a href="{{ url_for('profile') }}">Мои данные</a>
+        <a href="{{ url_for('contacts') }}">Контакты</a>
+        <a href="{{ url_for('calendar_view') }}">Календарь</a>
+        <form action="{{ url_for('logout') }}" method="POST" style="display: inline;">
+    <button type="submit" class="btn-exit">Выйти</button>
 </form>
-<form action="{{ url_for('contacts') }}" method="GET">
-    <button type="submit" class="btn-contacts">Контакты</button>
-</form>
+    </div>
 
-<form action="{{ url_for('calendar_view') }}" method="GET">
-    <button type="submit" class="btn-calendar">Открыть календарь</button>
-</form>
-<form action="{{ url_for('logout') }}" method="POST">
-    <button class='btn-exit' type="submit" class="iconic" title="Выйти и перейти к странице входа">Выйти <i
-            class="fa-solid fa-person-through-window"></i></button>
-</form>
-<h1>Канбан-доска</h1>
-<h1>Добро пожаловать, {{ session['first_name'] }} {{ session['last_name'] }}!</h1>
-<!-- Форма добавления проекта -->
-<form id="newProjectForm" action="{{ url_for('create_project') }}" method="post">
-    <!-- Исправлено с 'add_project' на 'create_project' -->
-    <input type="text" name="project_name" placeholder="Название проекта" required>
-    <button type="submit">Добавить проект</button>
-</form>
+    <div class="main-content">
+        <h1>Список проектов</h1>
 
-
-<div class="kanban-board">
-    {% for project in projects %}
-
-    <div class="project" id="project-{{ project['id'] }}">
-        <h2>{{ project['name'] }}
-            <button class='btn-delete-project' onclick="deleteProject({{ project['id'] }})">Удалить проект</button>
-        </h2>
-        <div class="project-users">
-            <strong>Участники проекта:</strong>
-            <ul>
-                {% for user in project_users[project['id']] %}
-                <li>{{ user['display_name'] }} - {{ user['role'] }}</li> <!-- Показываем имя пользователя и его роль -->
-                <button onclick="removeUserFromProject({{ project['id'] }}, '{{ user['username'] }}')">Удалить</button>
-                {% endfor %}
-            </ul>
-        </div>
-        <!-- Форма приглашения пользователя в проект -->
-        <!-- Форма приглашения пользователя в проект -->
-        <form id="inviteForm" action="/invite_to_project/{{ project.id }}" method="POST"
-              onsubmit="return validateInviteForm()">
-            <label for="user_select">Пригласить пользователя:</label>
-            <select name="user_id" id="user_select" required>
-                <option value="">Выберите пользователя</option>
-                {% if session['is_ldap_user'] %}
-                <!-- Отображаем только LDAP пользователей с именем и фамилией -->
-                {% for user in ldap_users %}
-                <option value="{{ user['id'] }}">{{ user['first_name'] }} {{ user['last_name'] }}</option>
-                {% endfor %}
-                {% else %}
-                <!-- Отображаем только локальных пользователей по их имени пользователя -->
-                {% for user in local_users %}
-                <option value="{{ user['id'] }}">{{ user['username'] }}</option>
-                {% endfor %}
-                {% endif %}
+        <!-- Форма добавления проекта -->
+        <form id="newProjectForm" action="{{ url_for('create_project') }}" method="post">
+            <input type="text" name="project_name" placeholder="Название проекта" required>
+            <select name="priority" required>
+                <option value="Высокий">Высокий</option>
+                <option value="Средний">Средний</option>
+                <option value="Низкий">Низкий</option>
             </select>
-            <button type="submit">Пригласить в проект</button>
+            <button type="submit">Добавить проект</button>
         </form>
 
-
-        <script>
-            function validateInviteForm() {
-                const userSelect = document.getElementById('user_select');
-                if (userSelect.value === "") {
-                    alert("Пожалуйста, выберите пользователя для приглашения.");
-                    return false;
-                }
-                return true;
-            }
-        </script>
-
-        <!-- Столбцы статусов задач -->
-        <div class="status-column" id="to-do" ondrop="drop(event, 'To Do', {{ project['id'] }})"
-             ondragover="allowDrop(event)">
-            <h3>To Do</h3>
-            {% if project['id'] in tasks_by_project and 'To Do' in tasks_by_project[project['id']] %}
-            {% for task in tasks_by_project[project['id']]['To Do'] %}
-            <div class="task" draggable="true" ondragstart="drag(event)" id="task-{{ task['id'] }}">
-                <span id="task-title-{{ task['id'] }}">#{{ task['task_number'] }} - {{ task['title'] }}</span>
-
-                {% if task['assignee_name'] %}
-                <p>Назначено: {{ task['assignee_name'] }}</p>
-                {% else %}
-                <p>Назначено: Не назначено</p>
-                {% endif %}
-
-                <button class='description-button'
-                        onclick="openModal({{ task['id'] }}, decodeURIComponent('{{ task['description'] | default('') | urlencode }}'))"
-                        data-tooltip="{{ task['description'] | default('Нет описания') | e }}">
-                    Описание
-                </button>
-
-                <button class='btn-simp' onclick="openTitleModal({{ task['id'] }}, '{{ task['title'] }}')">
-                    Редактировать
-                </button>
-
-                <button class='btn-del' onclick="deleteTask({{ task['id'] }})">Удалить</button>
+        <!-- Фильтры -->
+        <div class="filters-container">
+            <div class="filter-group">
+                <label for="filter_status">Статус:</label>
+                <select id="filter_status">
+                    <option value="">Все</option>
+                    <option value="Концепция">Концепция</option>
+                    <option value="Запущено">Запущено</option>
+                    <option value="В Работе">В Работе</option>
+                    <option value="Обзор">Обзор</option>
+                    <option value="Завершено">Завершено</option>
+                </select>
             </div>
-            {% endfor %}
-            {% endif %}
+            <div class="filter-group">
+                <label for="filter_priority">Приоритет:</label>
+                <select id="filter_priority">
+                    <option value="">Все</option>
+                    <option value="Высокий">Высокий</option>
+                    <option value="Средний">Средний</option>
+                    <option value="Низкий">Низкий</option>
+                </select>
+            </div>
         </div>
 
-        <div class="status-column" id="in-progress" ondrop="drop(event, 'In Progress', {{ project['id'] }})"
-             ondragover="allowDrop(event)">
-            <h3>In Progress</h3>
-            {% if project['id'] in tasks_by_project and 'In Progress' in tasks_by_project[project['id']] %}
-            {% for task in tasks_by_project[project['id']]['In Progress'] %}
-            <div class="task" draggable="true" ondragstart="drag(event)" id="task-{{ task['id'] }}">
-                <span id="task-title-{{ task['id'] }}">#{{ task['task_number'] }} - {{ task['title'] }}</span>
-
-                {% if task['assignee_name'] %}
-                <p>Назначено: {{ task['assignee_name'] }}</p>
-                {% else %}
-                <p>Назначено: Не назначено</p>
-                {% endif %}
-
-                <button class='description-button'
-                        onclick="openModal({{ task['id'] }}, decodeURIComponent('{{ task['description'] | default('') | urlencode }}'))"
-                        data-tooltip="{{ task['description'] | default('Нет описания') | e }}">
-                    Описание
-                </button>
-
-                <button class='btn-simp' onclick="openTitleModal({{ task['id'] }}, '{{ task['title'] }}')">
-                    Редактировать
-                </button>
-
-                <button class='btn-del' onclick="deleteTask({{ task['id'] }})">Удалить</button>
-            </div>
-            {% endfor %}
-            {% endif %}
-        </div>
-
-        <div class="status-column" id="done" ondrop="drop(event, 'Done', {{ project['id'] }})"
-             ondragover="allowDrop(event)">
-            <h3>Done</h3>
-            {% if project['id'] in tasks_by_project and 'Done' in tasks_by_project[project['id']] %}
-            {% for task in tasks_by_project[project['id']]['Done'] %}
-            <div class="task" draggable="true" ondragstart="drag(event)" id="task-{{ task['id'] }}">
-                <span id="task-title-{{ task['id'] }}">#{{ task['task_number'] }} - {{ task['title'] }}</span>
-
-                {% if task['assignee_name'] %}
-                <p>Назначено: {{ task['assignee_name'] }}</p>
-                {% else %}
-                <p>Назначено: Не назначено</p>
-                {% endif %}
-
-                <button class='description-button'
-                        onclick="openModal({{ task['id'] }}, decodeURIComponent('{{ task['description'] | default('') | urlencode }}'))"
-                        data-tooltip="{{ task['description'] | default('Нет описания') | e }}">
-                    Описание
-                </button>
-
-                <button class='btn-simp' onclick="openTitleModal({{ task['id'] }}, '{{ task['title'] }}')">
-                    Редактировать
-                </button>
-
-                <button class='btn-del' onclick="deleteTask({{ task['id'] }})">Удалить</button>
-            </div>
-            {% endfor %}
-            {% endif %}
-        </div>
-
-        <!-- Форма добавления задачи -->
-        <!-- Форма добавления задачи -->
-        <form id="NewTaskForm" action="{{ url_for('add_task') }}" method="post" onsubmit="return validateTaskForm()">
-            <input type="text" name="title" placeholder="Название задачи" required>
-            <input type="date" name="due_date" placeholder="Срок выполнения">
-            <input type="hidden" name="project_id" value="{{ project['id'] }}">
-
-            <!-- Выпадающий список для выбора исполнителя задачи -->
-            <label for="assignee">Назначить задачу пользователю:</label>
-            <select name="assignee_id" id="assignee">
-                <option value="">Выберите пользователя</option>
-                {% for user in project_users[project['id']] %}
-                <option value="{{ user['id'] }}">{{ user['display_name'] }}</option>
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Название</th>
+                    <th>Статус</th>
+                    <th>Приоритет</th>
+                    <th>Ответственный</th>
+                    <th>Действия</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for project in projects %}
+                <tr data-status="{{ project['status'] }}" data-priority="{{ project['priority'] }}">
+                    <td>{{ project['id'] }}</td>
+                    <td><a href="{{ url_for('view_project', project_id=project['id']) }}">{{ project['name'] }}</a></td>
+                    <td>
+                        <select class="change-status" data-project-id="{{ project['id'] }}">
+                            <option value="Концепция" {% if project['status'] == 'Концепция' %}selected{% endif %}>Концепция</option>
+                            <option value="Запущено" {% if project['status'] == 'Запущено' %}selected{% endif %}>Запущено</option>
+                            <option value="В Работе" {% if project['status'] == 'В Работе' %}selected{% endif %}>В Работе</option>
+                            <option value="Обзор" {% if project['status'] == 'Обзор' %}selected{% endif %}>Обзор</option>
+                            <option value="Завершено" {% if project['status'] == 'Завершено' %}selected{% endif %}>Завершено</option>
+                        </select>
+                    </td>
+                    <td>
+                        <select class="change-priority" data-project-id="{{ project['id'] }}">
+                            <option value="Высокий" {% if project['priority'] == 'Высокий' %}selected{% endif %}>Высокий</option>
+                            <option value="Средний" {% if project['priority'] == 'Средний' %}selected{% endif %}>Средний</option>
+                            <option value="Низкий" {% if project['priority'] == 'Низкий' %}selected{% endif %}>Низкий</option>
+                        </select>
+                    </td>
+                    <td>{{ project['owner_name'] }}</td>
+                    <td>
+                        <button class="delete-project" data-project-id="{{ project['id'] }}">Удалить</button>
+                    </td>
+                </tr>
                 {% endfor %}
-            </select>
-
-            <!-- Выбор родительской задачи -->
-            <label for="parent_task">Родительская задача (опционально):</label>
-            <select name="parent_id" id="parent_task">
-                <option value="">Без родителя</option>
-                {% if project['id'] in tasks_by_project %}
-                {% for status, tasks in tasks_by_project[project['id']].items() %}
-                {% for task in tasks %}
-                <option value="{{ task['id'] }}">{{ task['title'] }}</option>
-                {% endfor %}
-                {% endfor %}
-                {% endif %}
-            </select>
-
-            <button type="submit">Добавить задачу</button>
-        </form>
-
+            </tbody>
+        </table>
     </div>
-    {% endfor %}
-</div>
 
-<!-- Модальное окно для описания задачи -->
-<div id="descriptionModal" class="modal">
-    <div class="modal-content">
-        <span class="close" onclick="closeModal()">&times;</span>
-        <h2>Описание задачи</h2>
-        <textarea id="taskDescription" placeholder="Введите описание задачи..."></textarea>
-        <button onclick="saveDescription()">Сохранить</button>
-    </div>
-</div>
-
-<!-- Модальное окно для редактирования названия задачи -->
-<div id="titleModal" class="modal">
-    <div class="modal-content">
-        <span class="close" onclick="closeTitleModal()">&times;</span>
-        <h2>Редактировать название задачи</h2>
-        <input type="text" id="taskTitleInput" placeholder="Введите новое название...">
-        <button onclick="saveTitle()">Сохранить</button>
-    </div>
-</div>
-
-<!-- Всплывающая подсказка для описания задачи -->
-<div id="tooltip" class="tooltip" style="display: none;"></div>
-
-<script src="{{ url_for('static', filename='scripts.js') }}"></script>
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const tooltip = document.getElementById('tooltip'); // Создаем один tooltip
-
-        // Добавляем события наведения для всех кнопок с классом 'description-button'
-        document.querySelectorAll('.description-button').forEach(button => {
-            button.addEventListener('mouseenter', function(event) {
-                showTooltip(event, tooltip); // Показываем всплывающую подсказку при наведении
-            });
-            button.addEventListener('mouseleave', function() {
-                hideTooltip(tooltip); // Скрываем всплывающую подсказку при уходе курсора
+    <script>
+        document.querySelectorAll('.change-status').forEach(select => {
+            select.addEventListener('change', function() {
+                const projectId = this.dataset.projectId;
+                const newStatus = this.value;
+                fetch(`/update_project_status/${projectId}`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({status: newStatus})
+                }).then(() => location.reload());
             });
         });
-    });
 
-    function showTooltip(event, tooltip) {
-        const button = event.target;
-        const tooltipText = button.getAttribute('data-tooltip') || 'Нет описания'; // Берем текст или выводим 'Нет описания'
-        tooltip.innerText = tooltipText; // Заполняем содержимое подсказки
-
-        // Получаем координаты кнопки
-        const buttonRect = button.getBoundingClientRect();
-
-        // Вычисляем положение подсказки
-        tooltip.style.left = `${buttonRect.left + window.pageXOffset}px`;
-        tooltip.style.top = `${buttonRect.top + buttonRect.height + window.pageYOffset}px`;
-
-        tooltip.style.display = 'block'; // Показываем подсказку
-    }
-
-    function hideTooltip(tooltip) {
-        tooltip.style.display = 'none'; // Скрываем подсказку
-    }
-
-
-</script>
-
+        document.querySelectorAll('.change-priority').forEach(select => {
+            select.addEventListener('change', function() {
+                const projectId = this.dataset.projectId;
+                const newPriority = this.value;
+                fetch(`/update_project_priority/${projectId}`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({priority: newPriority})
+                }).then(() => location.reload());
+            });
+        });
+    </script>
 </body>
 </html>

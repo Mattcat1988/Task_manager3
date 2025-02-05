@@ -1,312 +1,116 @@
 /* Общие стили */
 body {
-    font-family: 'Helvetica', 'Arial', sans-serif;
-    background: linear-gradient(45deg, #bac8ee, #e4c5e8);
+    font-family: 'Segoe UI', 'Arial', sans-serif;
+    background-color: #f3f3f3;
     margin: 0;
+    display: flex;
+    height: 100vh;
+}
+
+/* Боковая панель навигации */
+.sidebar {
+    width: 250px;
+    background-color: #2b579a;
+    color: white;
+    display: flex;
+    flex-direction: column;
     padding: 20px;
+    box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.sidebar h2 {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.sidebar a {
+    display: block;
+    padding: 10px;
+    margin: 5px 0;
+    color: white;
+    text-decoration: none;
+    background-color: #1d3b6f; /* Темно-синий цвет по умолчанию */
+    border-radius: 5px;
+    text-align: center;
+    transition: background 0.3s;
+}
+
+.sidebar a:hover {
+    background-color: #0078d4; /* Синий цвет кнопки при наведении */
+    color: white;
+}
+
+/* Основной контент */
+.main-content {
+    flex-grow: 1;
+    padding: 20px;
+    overflow-y: auto;
 }
 
 h1 {
-    text-align: center;
+    color: #2b579a;
 }
 
-form {
-    margin-bottom: 20px;
-    text-align: center;
-}
-
-/* Стили канбан-доски */
-.kanban-board {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 20px;
-}
-
-.project {
-    background-color: #ffffff5e;
-    border-radius: 10px;
-    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
-    padding: 15px;
-    width: 300px;
-    backdrop-filter: blur(5px);
-
-}
-
-.project h2 {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-top: 0;
-}
-
-.status-column {
-    margin-top: 10px;
-    border-radius: 5px;
-    padding: 10px;
-    background-color: #e9e9e9;
-}
-
-.status-column h3 {
-    text-align: center;
-    color: #333;
-}
-
-.task {
-    background-color: #d8eaecc9;
-    border: 1px solid #d3d3d3;
-    border-radius: 5px;
-    margin-top: 10px;
-    padding: 10px;
-    position: relative;
-    transition: all 0.3s ease;
-    display: flex;
-    flex-direction: column;
-    text-align: center
-}
-
-.task:hover {
-    transform: scale(1.02);
-    box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.2);
-}
-
-.task button {
-    position: relative;
-    right: 5px;
-    top: 5px;
-    background: none;
-    border: none;
-    cursor: pointer;
-
-}
-
-.task button.delete {
-    color: #ff4d4d;
-}
-
-.btn-simp {
-    color: #000000;
-}
-
-.btn-del {
-    color: #ff4d4d;
-}
-
-.task button.add {
-    color: #007bff;
-}
-
-/* Кнопки */
 button {
-    background-color: #007bff;
+    background-color: #0078d4;
     border: none;
-    border-radius: 5px;
     color: white;
+    padding: 10px 15px;
+    border-radius: 5px;
     cursor: pointer;
-    padding: 5px 10px;
-    transition: background-color 0.3s;
-    font-weight: bold;
-}
-
-button.add {
-    color: blue;
+    font-size: 14px;
+    transition: background 0.3s;
 }
 
 button:hover {
-    color: #000000;
-    background-color: #ffffff;
+    background-color: #005a9e;
 }
 
-/* Стили для модального окна */
-.modal {
-    display: none;
-    position: fixed;
-    z-index: 1;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-    overflow: auto;
-    background-color: rgba(0, 0, 0, 0.5);
+/* Канбан-доска */
+.kanban-board {
+    display: flex;
+    gap: 20px;
+    justify-content: center;
+    flex-wrap: wrap;
 }
 
-.modal-content {
-    background-color: #fefefe;
-    margin: 10% auto;
-    padding: 20px;
-    border: 1px solid #888;
-    width: 80%;
-    max-width: 500px;
-    border-radius: 8px;
-}
-
-.close {
-    color: #aaa;
-    float: right;
-    font-size: 28px;
-    font-weight: bold;
-    cursor: pointer;
-}
-
-textarea {
-    width: 100%;
-    height: 100px;
-    margin-top: 10px;
-}
-
-button.add {
-    color: white;
-    background-color: blue;
-}
-
-.close:hover {
-    color: #000;
-}
-
-/* Tooltip styles */
-.tooltip {
-    position: absolute;
-    background-color: #333;
-    color: #fff;
-    padding: 5px;
-    border-radius: 4px;
-    font-size: 12px;
-    display: none;
-    z-index: 100;
-    white-space: nowrap;
-}
-
-.description-button:hover+.tooltip {
-    display: block;
-    transition: opacity 0.3s ease-in-out;
-}
-
-.description-button {
-    color: #000000;
-}
-
-/* Поле приглашения пользователя и кнопка */
-
-#inviteForm input {
-    margin-bottom: 10px;
-    width: 75%;
-    height: calc(1.25rem + 2px);
-    padding: 0.375rem 0.75rem;
-    font-family: inherit;
-    font-size: 1rem;
-    font-weight: 200;
-    line-height: 1.5;
-    color: #01023d;
-    background-color: #fff;
-    background-clip: padding-box;
-    border: 1px solid #bdbdbd;
-    border-radius: 0.25rem;
-    transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
-    -webkit-appearance: none;
-    -moz-appearance: none;
-    appearance: none;
-}
-
-#inviteForm input::placeholder {
-    color: #01023d;
-    opacity: 0.4;
-    font-size: small;
-}
-
-#inviteForm button {
-    width: 75%;
-}
-
-/* Поле название задачи и кнопка */
-
-#NewTaskForm input {
-    margin-top: 10px;
-    margin-bottom: 10px;
-    width: 75%;
-    height: calc(1.25rem + 2px);
-    padding: 0.375rem 0.75rem;
-    font-family: inherit;
-    font-size: 1rem;
-    font-weight: 200;
-    line-height: 1.5;
-    color: #01023d;
-    background-color: #fff;
-    background-clip: padding-box;
-    border: 1px solid #bdbdbd;
-    border-radius: 0.25rem;
-    transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
-    -webkit-appearance: none;
-    -moz-appearance: none;
-    appearance: none;
-}
-
-#NewTaskForm input::placeholder {
-    color: #01023d;
-    opacity: 0.4;
-    font-size: small;
-}
-
-/* Поле название проекта и кнопка */
-#newProjectForm {
-    position: relative;
-
-}
-
-#newProjectForm input {
-    margin-top: 10px;
-    margin-bottom: 10px;
-    width: 10%;
-    height: calc(1.25rem + 2px);
-    padding: 0.375rem 0.75rem;
-    font-family: inherit;
-    font-size: 1rem;
-    font-weight: 200;
-    line-height: 1.5;
-    color: #01023d;
-    background-color: #fff;
-    background-clip: padding-box;
-    border: 1px solid #bdbdbd;
-    border-radius: 0.25rem;
-    transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
-
-}
-
-#newProjectForm input::placeholder {
-    color: #01023d;
-    opacity: 0.4;
-    font-size: large;
-}
-
-#newProjectForm button {
-    width: auto%;
-    height: 35.5px;
-}
-
-/* Кнопка ВЫЙТИ */
-.btn-exit {
-    float: right;
-    padding: 10px;
-    width: 120px;
-    height: 75px;
-    font-size: larger;
+.project {
+    background-color: white;
+    padding: 15px;
     border-radius: 10px;
-    justify-content: space-between;
-    color: #ffffff;
-    background-color: #f855b9c9;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    width: 300px;
+}
+
+.status-column {
+    background-color: #e3e3e3;
+    padding: 10px;
+    border-radius: 5px;
+}
+
+.task {
+    background-color: #d9e8fc;
+    padding: 10px;
+    border-radius: 5px;
+    margin: 5px 0;
+}
+
+/* Стили для кнопки выхода */
+.btn-exit {
+    width: 100%;
+    background-color: #1d3b6f; /* Темно-синий по умолчанию, как и у бокового меню */
+    color: white;
+    padding: 10px;
+    border: none;
+    border-radius: 5px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background 0.3s;
+    text-align: center;
+    margin: 5px 0;
 }
 
 .btn-exit:hover {
-    color: #000000;
-    background-color: #ffffff;
-}
-
-/* Кнопка УДАЛИТЬ ПРОЕКТ */
-.btn-delete-project {
-    color: #ffffff;
-    background-color: #f855b9c9;
-}
-
-.btn-delete-project:hover {
-    color: #000000;
-    background-color: #ffffff;
+    background-color: #0078d4; /* Цвет как у остальных кнопок при наведении */
+    color: white;
 }

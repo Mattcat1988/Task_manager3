@@ -687,6 +687,30 @@ def invite_to_project(project_id):
 
     conn.close()
     return redirect(url_for('index'))
+#Просмотр проекта
+@app.route('/project/<int:project_id>')
+def view_project(project_id):
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+
+    conn = get_db_connection()
+    project = conn.execute('SELECT * FROM projects WHERE id = ?', (project_id,)).fetchone()
+
+    if not project:
+        conn.close()
+        return "Проект не найден", 404
+
+    tasks = conn.execute('SELECT * FROM tasks WHERE project_id = ?', (project_id,)).fetchall()
+    users = conn.execute('''
+        SELECT users.id, users.username, project_users.role 
+        FROM users 
+        JOIN project_users ON users.id = project_users.user_id
+        WHERE project_users.project_id = ?
+    ''', (project_id,)).fetchall()
+
+    conn.close()
+
+    return render_template('project_view.html', project=project, tasks=tasks, users=users)
 #Создать проект
 @app.route('/create_project', methods=['POST'])
 def create_project():
@@ -751,6 +775,46 @@ def remove_user_from_project():
     conn.close()
 
     return jsonify({'success': 'Пользователь успешно удален из проекта'})
+
+
+# Обновление статуса проекта
+@app.route('/update_project_status/<int:project_id>', methods=['POST'])
+def update_project_status(project_id):
+    if 'user_id' not in session:
+        return jsonify({'error': 'Unauthorized'}), 401
+
+    data = request.get_json()
+    new_status = data.get('status')
+
+    if not new_status:
+        return jsonify({'error': 'Invalid data'}), 400
+
+    conn = get_db_connection()
+    conn.execute('UPDATE projects SET status = ? WHERE id = ?', (new_status, project_id))
+    conn.commit()
+    conn.close()
+
+    return jsonify({'message': 'Статус обновлен успешно'}), 200
+
+
+# Обновление приоритета проекта
+@app.route('/update_project_priority/<int:project_id>', methods=['POST'])
+def update_project_priority(project_id):
+    if 'user_id' not in session:
+        return jsonify({'error': 'Unauthorized'}), 401
+
+    data = request.get_json()
+    new_priority = data.get('priority')
+
+    if not new_priority:
+        return jsonify({'error': 'Invalid data'}), 400
+
+    conn = get_db_connection()
+    conn.execute('UPDATE projects SET priority = ? WHERE id = ?', (new_priority, project_id))
+    conn.commit()
+    conn.close()
+
+    return jsonify({'message': 'Приоритет обновлен успешно'}), 200
 #Календарь
 @app.route('/calendar')
 def calendar_view():
