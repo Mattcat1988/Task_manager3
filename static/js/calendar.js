@@ -1,23 +1,3 @@
-<!DOCTYPE html>
-<html lang="ru">
-<head>
-    <meta charset="UTF-8">
-    <title>Календарь задач</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-    <link href='https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css' rel='stylesheet' />
-</head>
-<body>
-    <h1>Календарь задач</h1>
-
-    <!-- Кнопка для возврата на главную страницу -->
-    <form action="{{ url_for('index') }}" method="GET">
-        <button type="submit" class="btn-back">Назад к Канбану</button>
-    </form>
-
-    <div id='calendar'></div>
-
-    <script src='https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js'></script>
-<script>
 
         document.addEventListener('DOMContentLoaded', function() {
             var calendarEl = document.getElementById('calendar');
@@ -45,7 +25,3 @@
 
             calendar.render();
         });
-
-</script>
-</body>
-</html>

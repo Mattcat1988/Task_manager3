@@ -114,3 +114,102 @@ button:hover {
     background-color: #0078d4; /* Цвет как у остальных кнопок при наведении */
     color: white;
 }
+
+/* Контейнер админ-панели */
+.admin-container {
+    max-width: 800px;
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    margin: auto;
+    margin-top: 5vh;
+}
+
+/* Заголовки */
+.admin-container h1,
+.admin-container h2 {
+    text-align: center;
+    color: #2b579a;
+}
+
+/* Таблица */
+.admin-container table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+.admin-container th,
+.admin-container td {
+    border: 1px solid #ddd;
+    padding: 10px;
+    text-align: left;
+}
+
+.admin-container th {
+    background-color: #2b579a;
+    color: white;
+}
+
+/* Формы */
+.admin-container form {
+    margin-bottom: 20px;
+}
+
+.admin-container input,
+.admin-container select {
+    width: calc(100% - 20px);
+    padding: 8px;
+    margin-top: 5px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+/* Кнопки */
+.admin-container button {
+    width: 100%;
+    background-color: #0078d4;
+    color: white;
+    border: none;
+    padding: 10px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.admin-container button:hover {
+    background-color: #005a9e;
+}
+
+/* Модальные окна */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.modal-content {
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    width: 400px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+/* Кнопка закрытия */
+.close {
+    float: right;
+    font-size: 24px;
+    cursor: pointer;
+}
+#changePasswordModal {
+    display: none;
+}

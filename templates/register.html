@@ -20,15 +20,6 @@
         <button type="submit">Зарегистрироваться</button>
     </form>
 
-    <script>
-        document.querySelector('form').onsubmit = function(event) {
-            const password = document.getElementById('password').value;
-            const confirmPassword = document.getElementById('confirm_password').value;
-            if (password !== confirmPassword) {
-                event.preventDefault();
-                alert('Пароли не совпадают');
-            }
-        };
-    </script>
+<script src="{{ url_for('static', filename='js/register.js') }}"></script>
 </body>
 </html>

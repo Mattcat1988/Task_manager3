@@ -96,30 +96,6 @@
         </table>
     </div>
 
-    <script>
-        document.querySelectorAll('.change-status').forEach(select => {
-            select.addEventListener('change', function() {
-                const projectId = this.dataset.projectId;
-                const newStatus = this.value;
-                fetch(`/update_project_status/${projectId}`, {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({status: newStatus})
-                }).then(() => location.reload());
-            });
-        });
-
-        document.querySelectorAll('.change-priority').forEach(select => {
-            select.addEventListener('change', function() {
-                const projectId = this.dataset.projectId;
-                const newPriority = this.value;
-                fetch(`/update_project_priority/${projectId}`, {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({priority: newPriority})
-                }).then(() => location.reload());
-            });
-        });
-    </script>
+<script src="{{ url_for('static', filename='js/projects.js') }}"></script>
 </body>
 </html>

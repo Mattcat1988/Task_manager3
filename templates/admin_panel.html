@@ -4,294 +4,200 @@
     <meta charset="UTF-8">
     <title>Админ панель</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        /* Стили для админ-панели */
+        .admin-container {
+            max-width: 800px;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            margin: 20px auto;
+        }
+
+        .admin-container h1,
+        .admin-container h2 {
+            text-align: center;
+            color: #2b579a;
+        }
+
+        .admin-container table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        .admin-container th,
+        .admin-container td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: left;
+        }
+
+        .admin-container th {
+            background-color: #2b579a;
+            color: white;
+        }
+
+        .admin-container button {
+            background-color: #0078d4;
+            border: none;
+            color: white;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background 0.3s;
+        }
+
+        .admin-container button:hover {
+            background-color: #005a9e;
+        }
+
+        .admin-container form {
+            margin-bottom: 20px;
+        }
+
+        .admin-container input,
+        .admin-container select {
+            width: calc(100% - 20px);
+            padding: 8px;
+            margin-top: 5px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            width: 400px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .close {
+            float: right;
+            font-size: 24px;
+            cursor: pointer;
+        }
+
+        #changePasswordModal {
+            display: none;
+        }
+    </style>
 </head>
 <body>
-    <h1>Админ панель</h1>
+    <div class="admin-container">
+        <h1>Админ панель</h1>
 
-    <!-- Кнопка для создания нового пользователя -->
-    <button id="createUserBtn">Создать нового пользователя</button>
+        <!-- Кнопка для создания нового пользователя -->
+        <button id="createUserBtn">Создать нового пользователя</button>
 
-    <!-- Таблица существующих пользователей -->
-    <table>
-        <thead>
-            <tr>
-                <th>Имя пользователя</th>
-                <th>Администратор</th>
-                <th>Роль</th>
-                <th>Действия</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for user in users %}
-            <tr>
-                <td>{{ user['username'] }}</td>
-                <td>{{ 'Да' if user['is_admin'] else 'Нет' }}</td>
-                <td>
-                    <button onclick="openChangePasswordModal({{ user['id'] }})">Сменить пароль</button>
-                    <form action="{{ url_for('delete_user', user_id=user['id']) }}" method="POST" style="display:inline;">
-                        <button type="submit">Удалить</button>
-                    </form>
-                    <form action="{{ url_for('change_user_role', user_id=user['id']) }}" method="POST">
-                    <select name="is_admin">
-                        <option value="1" {% if user['is_admin'] %}selected{% endif %}>Админ</option>
-                        <option value="0" {% if not user['is_admin'] %}selected{% endif %}>Пользователь</option>
-                    </select>
-                    <button type="submit">Обновить</button>
+        <!-- Таблица существующих пользователей -->
+        <table>
+            <thead>
+                <tr>
+                    <th>Имя пользователя</th>
+                    <th>Администратор</th>
+                    <th>Действия</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for user in users %}
+                <tr>
+                    <td>{{ user['username'] }}</td>
+                    <td>{{ 'Да' if user['is_admin'] else 'Нет' }}</td>
+                    <td>
+                        <button onclick="openChangePasswordModal({{ user['id'] }})">Сменить пароль</button>
+                        <form action="{{ url_for('delete_user', user_id=user['id']) }}" method="POST" style="display:inline;">
+                            <button type="submit">Удалить</button>
+                        </form>
+                        <form action="{{ url_for('change_user_role', user_id=user['id']) }}" method="POST">
+                            <select name="is_admin">
+                                <option value="1" {% if user['is_admin'] %}selected{% endif %}>Админ</option>
+                                <option value="0" {% if not user['is_admin'] %}selected{% endif %}>Пользователь</option>
+                            </select>
+                            <button type="submit">Обновить</button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <!-- Кнопка для возврата -->
+        <form action="{{ url_for('index') }}" method="GET">
+            <button type="submit" class="btn-back">Назад к Канбану</button>
+        </form>
+
+        <h2>Настройки LDAP</h2>
+        <form id="ldapSettingsForm">
+            <label for="ldap_server">Сервер LDAP:</label>
+            <input type="text" id="ldap_server" name="ldap_server" value="{{ ldap_config['server'] }}" required>
+
+            <label for="ldap_port">Порт:</label>
+            <input type="number" id="ldap_port" name="ldap_port" value="{{ ldap_config['port'] }}" required>
+
+            <label for="ldap_bind_user">Пользователь для подключения:</label>
+            <input type="text" id="ldap_bind_user" name="ldap_bind_user" value="{{ ldap_config['bind_user'] }}" required>
+
+            <label for="ldap_bind_password">Пароль:</label>
+            <input type="password" id="ldap_bind_password" name="ldap_bind_password" required>
+
+            <label for="ldap_base_dn">Base DN:</label>
+            <input type="text" id="ldap_base_dn" name="ldap_base_dn" value="{{ ldap_config['base_dn'] }}" required>
+
+            <label for="ldap_user_attr">Атрибут имени пользователя:</label>
+            <input type="text" id="ldap_user_attr" name="ldap_user_attr" value="{{ ldap_config['user_attr'] }}" required>
+
+            <button type="button" onclick="saveLdapSettings()">Сохранить настройки</button>
+            <button type="button" onclick="testLdapConnection()">Проверить соединение</button>
+        </form>
+
+        <!-- Модальное окно для создания нового пользователя -->
+        <div id="createUserModal" class="modal">
+            <div class="modal-content">
+                <span class="close" onclick="closeCreateUserModal()">&times;</span>
+                <h2>Создание нового пользователя</h2>
+                <form id="createUserForm">
+                    <label for="username">Имя пользователя</label>
+                    <input type="text" id="username" name="username" required>
+                    <label for="password">Пароль</label>
+                    <input type="password" id="password" name="password" required>
+                    <label><input type="checkbox" id="is_admin" name="is_admin"> Сделать администратором</label>
+                    <button type="submit">Создать пользователя</button>
                 </form>
-                </td>
-
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-
-    <!-- Кнопка для возврата -->
-    <form action="{{ url_for('index') }}" method="GET">
-        <button type="submit" class="btn-back">Назад к Канбану</button>
-    </form>
-
-    <h2>Настройки LDAP</h2>
-    <form id="ldapSettingsForm">
-        <label for="ldap_server">Сервер LDAP:</label>
-        <input type="text" id="ldap_server" name="ldap_server" value="{{ ldap_config['server'] }}" required>
-
-        <label for="ldap_port">Порт:</label>
-        <input type="number" id="ldap_port" name="ldap_port" value="{{ ldap_config['port'] }}" required>
-
-        <label for="ldap_bind_user">Пользователь для подключения:</label>
-        <input type="text" id="ldap_bind_user" name="ldap_bind_user" value="{{ ldap_config['bind_user'] }}" required>
-
-        <label for="ldap_bind_password">Пароль:</label>
-        <input type="password" id="ldap_bind_password" name="ldap_bind_password" required>
-
-        <label for="ldap_base_dn">Base DN:</label>
-        <input type="text" id="ldap_base_dn" name="ldap_base_dn" value="{{ ldap_config['base_dn'] }}" required>
-
-        <label for="ldap_user_attr">Атрибут имени пользователя:</label>
-        <input type="text" id="ldap_user_attr" name="ldap_user_attr" value="{{ ldap_config['user_attr'] }}" required>
-
-        <button type="button" onclick="saveLdapSettings()">Сохранить настройки</button>
-        <button type="button" onclick="testLdapConnection()">Проверить соединение</button>
-    </form>
-
-
-    <!-- Модальное окно для создания нового пользователя -->
-    <div id="createUserModal" class="modal">
-        <div class="modal-content">
-            <span class="close" onclick="closeCreateUserModal()">&times;</span>
-            <h2>Создание нового пользователя</h2>
-            <form id="createUserForm">
-                <label for="username">Имя пользователя</label>
-                <input type="text" id="username" name="username" required>
-                <label for="password">Пароль</label>
-                <input type="password" id="password" name="password" required>
-                <label><input type="checkbox" id="is_admin" name="is_admin"> Сделать администратором</label>
-                <button type="submit">Создать пользователя</button>
-            </form>
+            </div>
         </div>
-    </div>
-<form action="{{ url_for('index') }}" method="GET">
-        <button type="submit" class="btn-back">Назад к Канбану</button>
-    </form>
-    <!-- Модальное окно для смены пароля -->
-    <div id="changePasswordModal" class="modal">
-        <div class="modal-content">
-            <span class="close" onclick="closeChangePasswordModal()">&times;</span>
-            <h2>Сменить пароль</h2>
-            <form id="changePasswordForm">
-                <label for="newPassword">Новый пароль</label>
-                <input type="password" id="newPassword" name="password" required>
-                <button type="submit">Сменить пароль</button>
-            </form>
+
+        <!-- Модальное окно для смены пароля -->
+        <div id="changePasswordModal" class="modal">
+            <div class="modal-content">
+                <span class="close" onclick="closeChangePasswordModal()">&times;</span>
+                <h2>Сменить пароль</h2>
+                <form id="changePasswordForm">
+                    <label for="newPassword">Новый пароль</label>
+                    <input type="password" id="newPassword" name="password" required>
+                    <button type="submit">Сменить пароль</button>
+                </form>
+            </div>
         </div>
     </div>
 
-    <script>
-        //LDAP настройки
-function saveLdapSettings() {
-    const formData = new FormData(document.getElementById("ldapSettingsForm"));
-
-    const jsonData = {};
-    formData.forEach((value, key) => {
-        jsonData[key] = value;
-    });
-
-    fetch("/admin/save_ldap_settings", {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json"
-        },
-        body: JSON.stringify(jsonData)
-    })
-    .then(response => {
-        if (!response.ok) {
-            return response.text().then(text => { throw new Error(text) });
-        }
-        return response.json();
-    })
-    .then(data => alert(data.message))
-    .catch(error => alert("Ошибка сохранения: " + error));
-}
-
-        function testLdapConnection() {
-            fetch("/admin/test_ldap_connection", { method: "POST" })
-            .then(response => response.json())
-            .then(data => alert(data.message))
-            .catch(error => alert("Ошибка тестирования: " + error));
-        }
-        // Функции для модальных окон
-        const createUserModal = document.getElementById('createUserModal');
-        const changePasswordModal = document.getElementById('changePasswordModal');
-        let currentUserId = null;
-
-        document.getElementById('createUserBtn').onclick = function() {
-            createUserModal.style.display = 'block';
-        };
-
-        function closeCreateUserModal() {
-            createUserModal.style.display = 'none';
-        }
-
-        function openChangePasswordModal(userId) {
-            currentUserId = userId;
-            changePasswordModal.style.display = 'block';
-        }
-
-        function closeChangePasswordModal() {
-            changePasswordModal.style.display = 'none';
-        }
-
-        // Создание нового пользователя через AJAX
-        document.getElementById('createUserForm').onsubmit = function(event) {
-            event.preventDefault();
-            const username = document.getElementById('username').value;
-            const password = document.getElementById('password').value;
-            const isAdmin = document.getElementById('is_admin').checked;
-
-            fetch('/admin/create_user_async', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    username: username,
-                    password: password,
-                    is_admin: isAdmin
-                })
-            }).then(response => response.json()).then(data => {
-                if (data.error) {
-                    alert(data.error);
-                } else {
-                    alert(data.success);
-                    closeCreateUserModal();
-                    window.location.reload();
-                }
-            });
-        };
-
-        // Смена пароля пользователя через AJAX
-        document.getElementById('changePasswordForm').onsubmit = function(event) {
-            event.preventDefault();
-            const newPassword = document.getElementById('newPassword').value;
-
-            fetch(`/admin/change_password_async/${currentUserId}`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    password: newPassword
-                })
-            }).then(response => response.json()).then(data => {
-                if (data.error) {
-                    alert(data.error);
-                } else {
-                    alert(data.success);
-                    closeChangePasswordModal();
-                }
-            });
-        };
-        // Создание нового пользователя через AJAX
-document.getElementById('createUserForm').onsubmit = function(event) {
-    event.preventDefault();
-    const username = document.getElementById('username').value;
-    const password = document.getElementById('password').value;
-    const isAdmin = document.getElementById('is_admin').checked;
-
-    fetch('/admin/create_user_async', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-            username: username,
-            password: password,
-            is_admin: isAdmin
-        })
-    }).then(response => {
-        // Проверка на то, что сервер вернул JSON, а не HTML
-        if (!response.ok) {
-            return response.text().then(text => { throw new Error(text) });
-        }
-        return response.json();
-    }).then(data => {
-        if (data.error) {
-            alert(data.error);
-        } else {
-            alert(data.success);
-            closeCreateUserModal();
-            window.location.reload();
-        }
-    }).catch(error => {
-        console.error('Ошибка:', error);
-        alert('Произошла ошибка при создании пользователя. Проверьте сервер.');
-    });
-};
-
-// Смена пароля пользователя через AJAX
-document.getElementById('changePasswordForm').onsubmit = function(event) {
-    event.preventDefault();
-    const newPassword = document.getElementById('newPassword').value;
-
-    fetch(`/admin/change_password_async/${currentUserId}`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-            password: newPassword
-        })
-    }).then(response => {
-        // Проверка на то, что сервер вернул JSON, а не HTML
-        if (!response.ok) {
-            return response.text().then(text => { throw new Error(text) });
-        }
-        return response.json();
-    }).then(data => {
-        if (data.error) {
-            alert(data.error);
-        } else {
-            alert(data.success);
-            closeChangePasswordModal();
-        }
-    }).catch(error => {
-        console.error('Ошибка:', error);
-        alert('Произошла ошибка при смене пароля. Проверьте сервер.');
-    });
-};
-        function testLdapConnection() {
-    console.log("Отправка запроса на тестирование LDAP...");
-    fetch("/admin/test_ldap_connection", { method: "POST" })
-        .then(response => response.json())
-        .then(data => {
-            console.log("Ответ сервера:", data);
-            alert(data.message || data.error);
-        })
-        .catch(error => {
-            console.error("Ошибка тестирования:", error);
-            alert("Ошибка тестирования: " + error);
-        });
-}
-    </script>
+<script src="{{ url_for('static', filename='js/admin.js') }}"></script>
 </body>
 </html>

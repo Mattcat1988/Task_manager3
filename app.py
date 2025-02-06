@@ -920,22 +920,32 @@ def delete_task():
     conn.close()
     return jsonify(success=True)
 
+
 @app.route('/delete_project', methods=['POST'])
 def delete_project():
     data = request.get_json()
     project_id = data.get('project_id')
+
+    if not project_id:
+        return jsonify(error="Не указан ID проекта"), 400
+
     conn = get_db_connection()
 
-    # Проверка: владелец проекта или администратор
-    user_id = session['user_id']
+    # Проверяем, существует ли проект
     project = conn.execute('SELECT owner_id FROM projects WHERE id = ?', (project_id,)).fetchone()
 
+    if not project:
+        conn.close()
+        return jsonify(error="Проект не найден"), 404
+
+    # Проверка прав на удаление
+    user_id = session['user_id']
     if project['owner_id'] == user_id or session.get('is_admin'):
         conn.execute('DELETE FROM tasks WHERE project_id = ?', (project_id,))
         conn.execute('DELETE FROM projects WHERE id = ?', (project_id,))
         conn.commit()
         conn.close()
-        return jsonify(success=True)
+        return jsonify(success="Проект удалён")
     else:
         conn.close()
         return jsonify(error="У вас нет прав для удаления этого проекта"), 403
