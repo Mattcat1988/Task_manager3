@@ -590,20 +590,21 @@ def update_profile():
         print("⚠️ Ошибка: user_id отсутствует в сессии!")
         return redirect(url_for('login'))
 
-    user_id = session['user_id']
+    username = session['username']  # 🔍 Используем username вместо id
     conn = get_db_connection()
 
     # Отладка
     print(f"📥 Данные из формы: {request.form}")
-    print(f"🔍 ID пользователя в сессии: {user_id}")
+    print(f"🔍 Username пользователя в сессии: {username}")
 
-    # Проверка, является ли пользователь LDAP
-    user = conn.execute('SELECT id, is_ldap_user FROM users WHERE id = ?', (user_id,)).fetchone()
+    # Поиск пользователя по username
+    user = conn.execute('SELECT id, is_ldap_user FROM users WHERE username = ?', (username,)).fetchone()
     if not user:
         print("❌ Ошибка: Пользователь не найден в БД")
         conn.close()
         return redirect(url_for('profile'))
 
+    user_id = user['id']  # Получаем id из БД
     is_ldap_user = user['is_ldap_user']
 
     # Обновляем ТОЛЬКО разрешённые поля
@@ -614,16 +615,16 @@ def update_profile():
     if is_ldap_user:
         print("✅ Это LDAP-пользователь, обновляем только email, телефон и заметки.")
         conn.execute(
-            "UPDATE users SET email = ?, phone = ?, notes = ? WHERE id = ?",
-            (email, phone, notes, user_id)
+            "UPDATE users SET email = ?, phone = ?, notes = ? WHERE username = ?",
+            (email, phone, notes, username)
         )
     else:
         print("✅ Это локальный пользователь, обновляем все данные.")
         first_name = request.form.get('first_name')
         last_name = request.form.get('last_name')
         conn.execute(
-            "UPDATE users SET first_name = ?, last_name = ?, email = ?, phone = ?, notes = ? WHERE id = ?",
-            (first_name, last_name, email, phone, notes, user_id)
+            "UPDATE users SET first_name = ?, last_name = ?, email = ?, phone = ?, notes = ? WHERE username = ?",
+            (first_name, last_name, email, phone, notes, username)
         )
 
     conn.commit()
