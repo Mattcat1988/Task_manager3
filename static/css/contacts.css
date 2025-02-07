@@ -1,0 +1,118 @@
+/* Контейнер страницы */
+.main-content {
+    max-width: 800px;
+    margin: 20px auto;
+    padding: 20px;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Заголовки */
+h1, h2 {
+    text-align: center;
+    color: #2b579a; /* Цвет заголовков как в админ-панели */
+}
+
+/* Форма поиска */
+#search {
+    width: 100%;
+    max-width: 400px;
+    margin: 10px auto;
+    display: block;
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+/* Списки контактов */
+ul {
+    list-style: none;
+    padding: 0;
+}
+
+ul li {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #f9f9f9;
+    padding: 10px;
+    margin-bottom: 5px;
+    border-radius: 5px;
+}
+
+/* Ссылки на контакты */
+ul li a {
+    color: #0078d4; /* Основной синий цвет */
+    text-decoration: none;
+    font-weight: bold;
+}
+
+ul li a:hover {
+    text-decoration: underline;
+}
+
+/* Кнопки */
+button {
+    background-color: #0078d4;
+    border: none;
+    color: white;
+    padding: 8px 12px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+button:hover {
+    background-color: #005a9e;
+}
+
+/* Кнопка удаления */
+button.delete-contact {
+    background-color: #d9534f;
+}
+
+button.delete-contact:hover {
+    background-color: #c9302c;
+}
+
+/* Форма добавления контакта */
+form {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+form select {
+    padding: 8px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+}
+
+/* Модальное окно */
+.modal {
+    display: none;
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.modal-content {
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    width: 400px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+/* Кнопка закрытия */
+.close {
+    float: right;
+    font-size: 24px;
+    cursor: pointer;
+}

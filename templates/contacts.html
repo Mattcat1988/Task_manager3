@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Контакты</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/contacts.css') }}">
 </head>
 <body>
     <h1>Контакты</h1>
@@ -13,12 +13,19 @@
         <button type="submit" class="btn-back">Назад к Канбану</button>
     </form>
 
-
+    <!-- Локальная книга контактов -->
     <h2>Локальная книга контактов</h2>
     <ul>
         {% for contact in local_contacts %}
         <li>
-            <a href="#" onclick="openContactModal('{{ contact['id'] }}', '{{ contact['first_name'] }}', '{{ contact['last_name'] }}', '{{ contact['email'] }}', '{{ contact['phone'] }}', '{{ contact['notes'] }}')">
+            <a href="#" onclick="openContactModal(
+                '{{ contact['id'] }}',
+                '{{ contact['first_name'] }}',
+                '{{ contact['last_name'] }}',
+                '{{ contact['email'] }}',
+                '{{ contact['phone'] }}',
+                '{{ contact['notes'] }}'
+            )">
                 {{ contact['first_name'] }} {{ contact['last_name'] }} ({{ contact['email'] }})
             </a>
             <button onclick="deleteContact('{{ contact['id'] }}')">Удалить</button>
@@ -26,6 +33,7 @@
         {% endfor %}
     </ul>
 
+    <!-- Форма добавления контакта -->
     <h2>Добавить контакт</h2>
     <form action="{{ url_for('add_contact') }}" method="POST">
         <label for="contact_id">Выберите пользователя:</label>
@@ -38,12 +46,20 @@
         <button type="submit">Добавить</button>
     </form>
 
+    <!-- Глобальная книга контактов -->
     <h2>Глобальная книга контактов</h2>
     <input type="text" id="search" placeholder="Поиск..." onkeyup="filterContacts()">
     <ul id="global-contacts">
         {% for user in all_users %}
         <li>
-            <a href="#" onclick="openContactModal('{{ user['id'] }}', '{{ user['first_name'] }}', '{{ user['last_name'] }}', '{{ user['email'] }}', '{{ user['phone'] }}', '{{ user['notes'] }}')">
+            <a href="#" onclick="openContactModal(
+                '{{ user['id'] }}',
+                '{{ user['first_name'] }}',
+                '{{ user['last_name'] }}',
+                '{{ user['email'] }}',
+                '{{ user['phone'] }}',
+                '{{ user['notes'] }}'
+            )">
                 {{ user['first_name'] }} {{ user['last_name'] }} ({{ user['email'] }})
             </a>
         </li>
@@ -62,52 +78,7 @@
         </div>
     </div>
 
-    <script>
-        function filterContacts() {
-            let input = document.getElementById("search").value.toLowerCase();
-            let contacts = document.getElementById("global-contacts").getElementsByTagName("li");
-            for (let i = 0; i < contacts.length; i++) {
-                let text = contacts[i].textContent.toLowerCase();
-                contacts[i].style.display = text.includes(input) ? "" : "none";
-            }
-        }
-
-function openContactModal(id, firstName, lastName, email, phone, notes) {
-    document.getElementById("modalContactName").innerText = `${firstName} ${lastName}`;
-    document.getElementById("modalEmail").innerText = email && email !== "None" ? email : "Нет данных";
-    document.getElementById("modalPhone").innerText = phone && phone !== "None" ? phone : "Нет данных";
-    document.getElementById("modalNotes").innerText = notes && notes !== "None" ? notes : "Нет заметок";
-    document.getElementById("contactModal").style.display = "block";
-}
-
-        function closeContactModal() {
-            document.getElementById("contactModal").style.display = "none";
-        }
-
-        function deleteContact(contactId) {
-            if (!confirm("Вы уверены, что хотите удалить этот контакт?")) {
-                return;
-            }
-
-            fetch('/delete_contact', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ contact_id: contactId })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    alert(data.success);
-                    location.reload();
-                } else if (data.error) {
-                    alert(data.error);
-                }
-            })
-            .catch(error => {
-                console.error('Ошибка при удалении контакта:', error);
-                alert('Произошла ошибка при удалении контакта.');
-            });
-        }
-    </script>
+    <!-- Подключение скрипта -->
+    <script src="{{ url_for('static', filename='js/contacts.js') }}"></script>
 </body>
 </html>

@@ -10,6 +10,51 @@ document.addEventListener("DOMContentLoaded", function () {
             contact.style.display = contact.textContent.toLowerCase().includes(input) ? "" : "none";
         });
     };
+            function filterContacts() {
+            let input = document.getElementById("search").value.toLowerCase();
+            let contacts = document.getElementById("global-contacts").getElementsByTagName("li");
+            for (let i = 0; i < contacts.length; i++) {
+                let text = contacts[i].textContent.toLowerCase();
+                contacts[i].style.display = text.includes(input) ? "" : "none";
+            }
+        }
+
+function openContactModal(id, firstName, lastName, email, phone, notes) {
+    document.getElementById("modalContactName").innerText = `${firstName} ${lastName}`;
+    document.getElementById("modalEmail").innerText = email && email !== "None" ? email : "Нет данных";
+    document.getElementById("modalPhone").innerText = phone && phone !== "None" ? phone : "Нет данных";
+    document.getElementById("modalNotes").innerText = notes && notes !== "None" ? notes : "Нет заметок";
+    document.getElementById("contactModal").style.display = "block";
+}
+
+        function closeContactModal() {
+            document.getElementById("contactModal").style.display = "none";
+        }
+
+        function deleteContact(contactId) {
+            if (!confirm("Вы уверены, что хотите удалить этот контакт?")) {
+                return;
+            }
+
+            fetch('/delete_contact', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ contact_id: contactId })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert(data.success);
+                    location.reload();
+                } else if (data.error) {
+                    alert(data.error);
+                }
+            })
+            .catch(error => {
+                console.error('Ошибка при удалении контакта:', error);
+                alert('Произошла ошибка при удалении контакта.');
+            });
+        }
 
     // Удаление контакта
     window.deleteContact = function (contactId) {
